@@ -1,0 +1,73 @@
+#!/bin/bash
+
+file="contacts.csv"
+log_file="contact_log.txt"
+
+log() {
+  echo "$(date +%F_%T) - $1" >> "$log_file"
+}
+
+add_contact() {
+  read -p "Enter name: " name
+  read -p "Enter phone: " phone
+  echo "$name,$phone" >> "$file"
+  echo " Contact added."
+  log "Added contact: $name"
+}
+
+list_contacts() {
+  echo " Contact List:"
+  column -t -s, "$file"
+  log "Listed contacts"
+}
+
+search_contact() {
+  read -p "Enter name to search: " query
+  grep -i "$query" "$file" || echo " Not found."
+  log "Searched for: $query"
+}
+delete_contact() {
+  read -p "Enter name to delete: " name
+  if grep -qi "^$name," "$file"; then
+    grep -vi "^$name," "$file" > temp && mv temp "$file"
+    echo " Contact deleted."
+    log "Deleted contact: $name"
+  else
+    echo " Contact not found."
+  fi
+}
+update_contact() {
+  read -p "Enter name to update: " name
+  if grep -qi "^$name," "$file"; then
+    read -p "Enter new phone: " newphone
+    grep -vi "^$name," "$file" > temp
+    echo "$name,$newphone" >> temp
+    mv temp "$file"
+    echo " Contact updated."
+    log "Updated contact: $name"
+  else
+    echo " Contact not found."
+  fi
+}
+while true; do
+  echo "Contact Manager"
+  echo "1) Add Contact"
+  echo "2) List Contacts"
+  echo "3) Search Contact"
+  echo "4) Delete Contact"
+  echo "5) Update Contact"
+  echo "6) Exit"
+  read -p "Choose: " choice
+
+
+  case $choice in
+    1) add_contact ;;
+    2) list_contacts ;;
+    3) search_contact ;;
+    4) delete_contact ;;
+    5) update_contact ;;
+    6) echo "Bye!"; break ;;
+    *) echo " Invalid choice" ;;
+  esac
+done
+

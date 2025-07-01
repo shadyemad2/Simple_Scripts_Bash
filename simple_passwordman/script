@@ -1,0 +1,61 @@
+#!/bin/bash
+#  Password Manager Script
+# This script allows you to:
+# 1. Store passwords for different accounts (e.g., Gmail, Facebook, etc.)
+# 2. Encrypt the stored data using base64 encoding (simple obfuscation)
+# 3. Save the encrypted data to a file (e.g., passwords.db)
+# 4. View decrypted passwords
+
+
+
+file="password.txt"
+
+while true; do
+  echo
+  echo "1) Add Password"
+  echo "2) Show Passwords"
+  echo "3) Exit"
+  read -p "Choose an option: " opt
+
+  case $opt in
+    1)
+      read -p "Service: " service
+      service=$(echo "$service" | xargs)  # remove leading/trailing spaces
+
+      read -sp "Password: " pass
+      pass=$(echo -n "$pass")          # remove trailing newline
+      echo
+
+      if [ -z "$service" ] || [ -z "$pass" ]; then
+        echo " Service and Password must not be empty!"
+      else
+        encoded=$(echo -n "$pass" | base64)
+        echo "$service:$encoded" >> "$file"
+        echo " Saved!"
+      fi
+      ;;
+    2)
+      echo " Saved Passwords:"
+      while IFS=':' read -r s p; do
+        if [[ -n "$s" && -n "$p" ]]; then
+          decoded=$(echo "$p" | base64 -d 2>/dev/null)
+          if [ $? -eq 0 ]; then
+            echo "$s: $decoded"
+          else
+            echo "$s: Failed to decode"
+          fi
+        else
+          echo "Skipping invalid line."
+        fi
+      done < "$file"
+      ;;
+    3)
+      echo "Goodbye!"
+      break
+      ;;
+    *)
+      echo " Invalid option."
+      ;;
+  esac
+done
+

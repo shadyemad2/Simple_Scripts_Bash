@@ -1,0 +1,33 @@
+#!/bin/bash
+
+dir=$1
+
+
+
+if [ -z "$1" ]; then
+  echo " You must provide a directory path!"
+  echo "Usage: $0 /path/to/directory"
+  exit 1
+fi
+
+dir="$1"
+
+# Check if it's a real directory
+if [ ! -d "$dir" ]; then
+  echo " Directory does not exist: $dir"
+  exit 1
+fi
+
+echo "Scanning Directory: $1"
+
+deleted=0
+for file in "$dir"/*; do
+   if [[ "$file" == *.tmp || "$file" == *~ || "$(basename "$file")" == .#* ]]; then
+       rm -f "$file"
+       echo "Deleted: $file"
+       ((deleted++))
+   fi
+done
+
+echo "Cleanup Completed. $deleted file(s) deleted. "
+
