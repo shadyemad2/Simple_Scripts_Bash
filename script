@@ -1,0 +1,79 @@
+#!/bin/bash
+
+users_file="users.csv"
+touch "$users_file"
+
+#### login function ####
+function login(){
+    read -p "Enter your email: " input_email
+    found=0
+
+    while IFS=',' read -r email password; do
+        if [ "$email" == "$input_email" ]; then
+            found=1
+            read -sp "Enter your password: " input_pass
+            echo
+            if [ "$input_pass" == "$password" ]; then
+                echo "✅ Login Successful"
+            else
+                echo "❌ Incorrect password"
+            fi
+            break
+        fi
+    done < "$users_file"
+
+    if [ "$found" -eq 0 ]; then
+        echo "⚠️ Email not found"
+    fi
+}
+
+#### register function ####
+function register(){
+    read -p "Enter your email: " new_email
+
+    if grep -q "^$new_email," "$users_file"; then
+        echo "⚠️ Email already registered"
+        return
+    fi
+
+    read -sp "Enter your new password: " new_pass
+    echo
+    read -sp "Confirm your password: " confirm_pass
+    echo
+
+    if [ "$new_pass" == "$confirm_pass" ]; then
+        echo "$new_email,$new_pass" >> "$users_file"
+        echo "✅ Registered successfully"
+        return
+    else
+        echo "❌ Passwords do not match.. please try again"
+    fi
+}
+
+#### count function ####
+
+function count_users() {
+    total=$(grep -c '.' "$users_file")
+    echo " Total registered users: $total"
+}
+
+
+############## Main Menu ##############
+while true; do
+    echo
+    echo "===== User Auth Menu ====="
+    echo "1) Login"
+    echo "2) Register"
+    echo "3) show number of registered users"
+    echo "4) Exit"
+    read -p "Choose an option [1-4]: " choice
+
+    case $choice in
+        1) login ;;
+        2) register ;;
+	3) count_users ;;
+        4) echo "👋 Goodbye!"; break ;;
+        *) echo "❌ Invalid choice. Try again." ;;
+    esac
+done
+
